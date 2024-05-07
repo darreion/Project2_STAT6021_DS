@@ -1,0 +1,27 @@
+**Exclusion of Data** 
+
+`Latitude` and `longitude` are important metrics when evaluating housing data, specifically for location-based analysis. 
+
+For our analysis of  KIng’s County housing data, we’ve excluded data pertaining to `longitude` and `latitude` to focus on our comparative analysis focusing on primarily non-location-based factors. Moreover, in our analysis, we evaluate each property type based on similar and contrasting attributes such as the number of bedrooms, bathrooms, and square feet. 
+
+After loading the dataset in RStudio, we concluded with a visual inspection of the data and found a potential of the `sqft_living` variable matching as the exact sum of the ` sqft_above` and `sqft_below`.  To assess the likelihood of the scenario we created new columns and computed the data of the variables, and created a `boolean` response to verify our assumption (see below), 
+
+**Removal of Redundant Data**
+```{r} 
+library(tidyverse) 
+
+Data<-read.csv("kc_house_data.csv", sep=",", header=TRUE) 
+
+summary(Data) 
+
+Data_cleaned <- na.omit(Data) 
+
+Data_cleaned$equal <- ifelse(Data_cleaned$sqft_above + Data_cleaned$sqft_basement == Data_cleaned$sqft_living, "yes", "no") 
+
+summary(Data_cleaned$equal) 
+
+table(Data_cleaned$equal) 
+``` 
+
+Through our data discovery process, we determined the removal of `sqft_above` and `sqft_below` and utilizing `sqft_living` would be appropriate in the minimization of predictor variables related to livable space within a King’s County property. 
+  
