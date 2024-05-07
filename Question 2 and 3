@@ -1,0 +1,76 @@
+**Question 2:**
+
+A description of the data and the variables. Also, if you created any variables that your group used in your analysis, please include their descriptions as well and clearly describe how these were created. Make it clear that these variables were not part of the original dataset. 
+
+The Project 2 dataset explores home sales between May 2014 and May 2015 in King County, Washington, USA (including Seattle). 
+
+Variable of the dataset are listed and described below: 
+
+Quantitative Variables 
+
+price – price of each home sold 
+
+bedrooms` – number of bedrooms in the sold home 
+
+bathrooms – number of bathrooms in the sold home; half bathrooms are listed as 0.5, accounting for a room with a toilet but lacking a shower setup 
+
+sqft_living – total square footage of the interior living space (not including basement or garage)  
+
+sqft_lot – total square footage of the land space, excluding the home. 
+
+floors – number of floors within the home (e.g., two story home). 
+
+sqft_above – represents the square footage of the interior housing space that is above ground level 
+
+sqft_basement – represents the square footage of the interior housing space that is below ground level 
+
+yr_built – represents the year the home was fully constructed on the lot of land  
+
+yr_renovated – represents the year of the properties last recorded renovation 
+
+sqft_living15 – represents the approximate square footage of interior living space for the homes of the nearest 15 neighbors 
+
+sqft_lot15 – represents the square footage of the land lots of the nearest 15 neighbors 
+
+Qualitative Variables 
+
+id – ten-digit King’s County parcel ID number 
+
+date – date of the home sale in public tax and accessors records 
+
+waterfront – a dummy variable indicating whether the apartment has a waterfront view or not. 
+
+view – an index from 0 to 4 of quality of the view from a property, where 0 indicates no view or an unremarkable view, and 4 represents an excellent or highly desirable view 
+
+condition – the overall condition of a property, where 1 indicates a property in poor condition and 5 signifies a property in excellent condition, requiring no repairs or renovations. 
+
+grade – an index ranging from 1 to 13 and is used to evaluate the construction and design quality of the property. Scores from 1 to 3 indicate subpar construction and design, a score of 7 represents an average level, and scores from 11 to 13 denote a high-quality level of construction and design. 
+
+zipcode – postal code derived from the United States Postal Service defining the particular region, city, or town the house is geographically located 
+
+lat – represents how far north or south the property is located from the equator 
+
+long – represents how far west or east the property is located from the equator 
+
+Custom Continuous Variable  
+
+We created a continuous variable price per square foot ($/ sq. ft) to aid in our quest to achieve a binary response in Question 2. Additionally, $/sq. ft is further constrained to the high/expensive (75% percentile = $318.49 per sq. ft) and low/cheap (25% percentile = $182.48 per sqft) parameters. 
+ 
+
+Question 3: 
+
+**In this section, clearly state the two questions of interest your group is pursuing, as well as some motivation about why these questions are being pursued.**  
+
+ 
+
+Our group (no. 8) is pursuing two primary research questions focused on the housing market in the greater Kings County (KC), motivated by the potential to enhance understanding and decision-making in real estate. 
+
+Question 1: How do the various features of a house influence its price?  
+
+Motivation: Exploring how different features of a house affect its market price is crucial for a number of economic reasons. Firstly, it can assist in developing predictive models to forecast housing prices beyond KC, which is invaluable for buyers, sellers, and investors making informed decisions. Additionally, analyzing these influences can validate or refine existing theories about what factors drive house prices, offering internal insights in market dynamics. Lastly, understanding the impact of house features on price contributes to broader discussions on housing affordability and socioeconomic factors in urban planning or affordable housing programs (e.g., HUD). 
+
+Question 2: What influence do house qualities, aside from the size of the house, have on whether a house is categorized as high price or low price per living square foot?  
+
+Motivation: The architecture of this question probes deeper into the housing market dynamics by examining the price per square foot as a standardized measure of value, allowing for comparisons that transcend simple square footage calculations (i.e., 50 sq.ft versus 10-by-10). This approach helps identify underlying trends that affect property value based on characteristics other than size, such as location, age, and design quality. Using price per square foot as a response variable, categorized into high/expensive (above $318.49 per sqft) and low/cheap (below $182.48 per sqft), provides a refined view of the housing market. This segmentation is particularly useful in logistic regression models, where price classification can reveal how non-size related attributes (waterfront) contribute to perceived value, thus influencing buyer confidence/readiness, urban planning, investment strategies, and policy making related to housing markets. 
+
+Together, these questions form a comprehensive approach to understanding real estate valuation in KC, aiming to influence the decision-making processes of real estate agents, buyers, and financial institutions by providing deeper insights into factors that classify a house’s value as high or low. 
