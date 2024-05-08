@@ -1,0 +1,189 @@
+---
+title: "Part 1 - MLR"
+author: "Darreion Bailey"
+date: "2024-04-28"
+output: html_document
+---
+
+```{r setup, include=FALSE, results='hide'}
+knitr::opts_chunk$set(echo = TRUE)
+library(corrplot)
+library(tidyverse)
+library(scales)
+library(MASS)
+library(leaps)
+Data<-read.csv("kc_house_data.csv", sep=",", header=TRUE)
+Data$waterfront <- as.factor(Data$waterfront)
+Data$construction_category <- ifelse(Data$yr_built >= 2000 | Data$yr_renovated >= 2000, 1, 0)
+Data$construction_category <- as.factor(Data$construction_category)
+urban_zipcodes <- c(98003, 98146, 98115, 98002, 98040, 98119, 98112, 98117, 98058, 98052, 98007, 98056, 98105, 98042, 98144, 98004, 98001, 98116, 98118, 98125, 98136, 98023, 98032, 98102, 98198, 98103, 98108, 98168, 98028, 98107, 98133, 98109, 98006, 98166, 98122, 98177, 98031, 98074, 98106, 98178, 98188, 98005, 98034, 98126, 98199, 98008, 98011, 98148, 98039)
+# Add an urban_rural classification column to the dataframe. 
+Data$zipcode_category <- ifelse(Data$zipcode %in% urban_zipcodes, 1, 0)
+Data$zipcode_category <- as.factor(Data$zipcode_category)
+str(Data)
+summary(Data)
+colSums(is.na(Data))
+```
+
+```{r}
+
+Data$sqft_bathrooms<-Data$sqft_living * Data$bathrooms #interaction term
+
+set.seed(6021)
+sample.data<-sample.int(nrow(Data), floor(.50*nrow(Data)), replace = F)
+train<-Data[sample.data, ]
+#Add a column to indicate either house is renovated or constructed after 1999 or not. 
+#train$construction_category <- ifelse(train$yr_built >= 2000 | train$yr_renovated >= 2000, 1, 0)
+
+test<-Data[-sample.data, ]
+#Add a column to indicate either house is renovated or constructed after 1999 or not. 
+#test$construction_category <- ifelse(test$yr_built >= 2000 | test$yr_renovated >= 2000, 1, 0)
+train<-dplyr::select(train, -id, -sqft_above, -sqft_basement, -date, -yr_renovated, -yr_built, -lat, -long, -zipcode)
+# removing variables not associated with home features
+#matrix<-corrplot(cor(train),
+#         method = "number",
+#         type = "upper",
+ #        number.cex=0.50)
+
+```
+```{r}
+
+#train<-dplyr::select(train, -sqft_lot15,)
+
+```
+
+
+```{r}
+full_model <- lm(price~., data=train)
+backward_model <- step(full_model, direction = "backward")
+forward_model <- step(full_model, direction = "forward")
+stepwise_model <- step(full_model, direction = "both")
+AIC(backward_model)
+AIC(forward_model)
+AIC(stepwise_model)
+```
+Move forward with stepwise model because tied with forward for lowest AIC.
+
+```{r}
+#Residuals vs Fitted
+plot(stepwise_model, which=1)
+```
+
+```{r}
+## QQ Plot
+plot(stepwise_model,which=2)
+```
+
+```{r}
+plot(stepwise_model, which = 5)
+```
+
+Given the potential non-linearity shown in the residuals vs fitted plot, we will try to log transform the price variable to see if that helps the fit. Increasing variance in residual plot indicates we should try a transformation on the response variable. Box cox plot shows lambda very near to zero, so we use a log transformation on price. 
+
+
+```{r}
+MASS::boxcox(stepwise_model)
+train$price_log<-log(train$price)
+model_log_trans<-lm(price_log~. -price, data=train)
+stepwise_model_trans<- step(model_log_trans, direction = "both")
+summary(stepwise_model_trans)
+AIC(stepwise_model_trans)
+```
+
+
+Now let's run the plots again
+
+```{r}
+#Residuals vs Fitted
+plot(model_log_trans, which=1)
+```
+
+```{r}
+plot(model_log_trans,which=2)
+```
+```{r}
+plot(model_log_trans, which = 5)
+```
+
+```{r}
+specific_point1 <- Data[15871, ]
+specific_point1
+
+specific_point2<-Data[12778, ]
+specific_point2
+
+specific_point3<-Data[9715, ]
+specific_point3
+
+specific_point4<-Data[1720, ]
+specific_point4
+```
+Here we identify high leverage observations and influential outliers. The data point 15871 must be an entry error, because with the sqft_living being 1620sqft, it is not possible for there to be 33 bedrooms. Therefore, we can remove this entry
+```{r}
+hii<-lm.influence(stepwise_model)$hat ##leverages
+ext.student<-rstudent(stepwise_model) ##ext studentized res
+n<-nrow(train)
+p<-15
+
+#Alot of obs
+length(hii[hii>2*p/n])
+
+length(ext.student[abs(ext.student)>3])
+
+train<-train[train$bedrooms != 33, ]
+```
+
+
+
+Re-run regression
+
+```{r}
+#train$price_log<-log(train$price)
+model_log_trans<-lm(price_log~. -price, data=train)
+stepwise_model_trans<- step(model_log_trans, direction = "both")
+summary(stepwise_model_trans)
+
+```
+
+```{r}
+round(faraway::vif(stepwise_model_trans),3)
+```
+We observe sqft_living, sqft_bathrooms with VIFS over 10. Try removing sqft_bathrooms then refit. 
+
+```{r}
+model_log_trans<-lm(price_log~. -price -sqft_bathrooms, data=train)
+stepwise_model_trans<- step(model_log_trans, direction = "both")
+summary(stepwise_model_trans)
+```
+VIFS looks reasonable after removing sqft_bathrooms.
+```{r}
+round(faraway::vif(stepwise_model_trans),3)
+```
+
+```{r}
+par(mfrow = c(2, 2))
+plot(stepwise_model_trans)
+```
+
+
+```{r}
+summary(stepwise_model_trans)
+```
+From these diagnostic plots, we can reasonably conclude the assumptions are met
+
+
+
+Now we run vs. the test set
+
+```{r}
+test$predicted_log_price<-predict(stepwise_model_trans, newdata=test)
+test$predicted_price <- exp(test$predicted_log_price)
+rmse <- sqrt(mean((exp(test$predicted_log_price) - test$price)^2))
+mae <- mean(abs(exp(test$predicted_log_price) - test$price))
+
+plot(test$price, test$predicted_price, xlab = "Actual Price", ylab = "Predicted Price")
+abline(0, 1)
+```
+
+The model is very good at predicting prices below $300,000, but as the outliers are introduced it has a harder time predicting those. The variance is rather high, and the RMSE and MAE are high as well for values greater than $300,000. Figure out how to simplify model further, and account for variance and outliers
+
